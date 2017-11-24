@@ -1,0 +1,36 @@
+
+   {
+  "name": "TwitchViewer",
+  "short_name": "TwitchView",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#6441A4",
+  "description": "Twitch Viewer: check if channels are online",
+  "icons": [
+       {
+    "src": "icon72.png",
+    "type": "image/png",
+    "sizes": "72x72"
+  
+
+    },
+       {
+    "src": "icon192.png",
+    "type": "image/png",
+    "sizes": "192x192"
+  
+
+    },
+    {
+    "src": "icon512.PNG",
+    "type": "image/png",
+    "sizes": "512x512"
+  
+
+    }],
+"theme_color": "#6441A4"
+ 
+}
+
+
+

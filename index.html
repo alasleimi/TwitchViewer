@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+   
+<head>
+  
+        <link rel="icon" type="image/png" href="icon72.png" />
+        <link rel="manifest" href="manifest.json"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#6441A4"/>
+        <meta name = "keywords" content = "twitch  viewer, twitch api" />
+        <meta name = "description" content = "twitch Viewer: check if channels are online"/>
+        <meta name = "author" content = "Ala Eddine Sleimi" />
+        <title>twitchViewer</title>
+    <style>
+        html,body {
+            padding: 0; 
+            margin: 0;
+            background: #fafafa;
+        }
+        main {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            position: relative;
+            
+        }
+        header {
+           
+            background: #6441A4;
+            padding: none;
+            width: 100%;
+            height: 40vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 8vmin;
+        }
+        nav { 
+            display: flex;
+            background: #6441A4;
+            position: sticky;
+            align-content: center;
+            color: white;
+            top: 0;
+            height: 6vh;
+            font-size: 4.1vh;
+            padding-left: 1vh;
+            z-index: 100;
+        
+        }
+        nav * {
+            padding: 1vh;
+            cursor: pointer;
+        }
+       nav input[type="search"]{
+            background: #6441A4;
+            border: none;
+            flex-grow: 1;
+            height: 100%;
+            color: white;
+            font-weight: 600;
+            transition: all 0.1s ease-in;
+        }
+        
+        nav input[type="search"]::placeholder{
+            color: #6441A4;
+        }
+        nav input[type="search"]:focus{
+            background: white;
+            color: black;
+            
+        }
+        nav select {
+            height: 100%;
+            background: #6441A4;
+            border: none;
+            color: white;
+            outline: none;
+            align-self: flex-end;
+            
+        }
+        select:hover{
+            background: rgb(84, 55, 138);
+            
+
+        }
+        
+.card {
+    
+    background-color: #fff;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    border-radius: 2px;
+    margin: 2vmin;
+    width: 400px;
+    max-width: 90vw;
+    
+}
+.card .cardImg {
+    position: relative;
+   
+}
+.card .cardImg img {
+    width: 100%;
+    
+}
+.online .state {
+    color: green;
+}
+.offline .state {
+    color: red;
+    font-weight: 700;
+    font-size: 30px;
+}
+.card .cardImg .state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    background: white;
+    right: 24px;
+    bottom: -20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 100%;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12), 0 3px 1px -2px rgba(0,0,0,0.2);
+    z-index: 5;
+
+}
+.card .cardContent img {
+    border-radius: 100%;
+    height: 5vmin;
+}
+.card .cardContent {
+    display: flex;
+    padding: 2vmin;
+    align-items: center;
+   
+}
+.card .cardContent > * {
+    margin: 1vmin;
+}
+.card .cardImg a{
+    color: #fff;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    max-width: 100%;
+    padding: 24px;
+}
+
+
+.SelectOffline   .online {
+    display: none;
+}
+.SelectOnline   .offline {
+    display: none;
+}
+</style>
+
+</head>
+<body>
+<header>
+   <h1>TwitchViewer</h1> 
+</header>
+<nav>   
+        <label for="search"  target="search" title="search">&#8981;</label>
+        <input type="search" id="search" value="" onchange="updateStreams()" placeholder="search channel Names"/>
+       <select aria-label="filter results"><option value="all">all</option>
+               <option value="SelectOnline">online</option>
+               <option value="SelectOffline">offline</option>
+               
+    </select>
+    
+</nav>
+
+
+
+
+<main>
+</main>
+<script>
+  "use strict"
+const UI = {
+    search: document.getElementById("search"),
+    select: document.getElementsByTagName("select")[0],
+    main:  document.getElementsByTagName("main")[0]
+}
+let StreamIDS = ["ESL_SC2", "OgamingSC2", "cretetion", "freecodecamp", "storbeck", "habathcx", "RobotCaleb", "noobs2ninjas"];
+
+function GetJSON(url){
+    const req = new XMLHttpRequest();    
+    req.open("Get",url);
+    req.send();
+    
+    return new Promise((resolve,reject)=>{
+        req.onreadystatechange = function(event) {
+    // XMLHttpRequest.DONE === 4
+    if (this.readyState === XMLHttpRequest.DONE) {
+        if (this.status === 200) {
+            resolve(JSON.parse(this.response));
+        } else {
+           
+            reject(this);
+            
+        }
+    }
+
+
+    }})
+}
+
+function getStreamData(streamID){
+    const  baseURL ="https://wind-bow.glitch.me/twitch-api/";
+
+    return GetJSON(baseURL+"streams/"+streamID).then(data =>{
+            if(data.stream !== null) return {online: true , stream: data.stream}
+            else return GetJSON(baseURL+"channels/"+streamID).then(data =>{ return {online: false,
+                                                                            stream: {channel: data}
+                                                                            }});
+
+    })
+    
+}
+
+function updateStreams(){
+    let streamData = [];
+    let searchValue = UI.search.value.toUpperCase();
+    let filtredStreamsIDS = StreamIDS.filter(e=>e.toUpperCase().includes(searchValue));
+    for( const id of filtredStreamsIDS) streamData.push(getStreamData(id));
+    Promise.all(streamData).then( channels => {
+        let result = "";
+    for(const channel of channels){
+       
+        result+=`<div class="card ${channel.online?"on":"off"}line ">
+           <div class="cardImg" >
+             <img   src="${channel.online? channel.stream.preview.medium+`" alt="preview - online" title="preview - online"`
+                                       : (channel.stream.channel.video_banner!==null?
+                                         channel.stream.channel.video_banner:
+                                         `https://static-cdn.jtvnw.net/jtv-static/404_preview-300x180.png`) +`" alt="banner - offline" title="banner - offline"`
+                                        }>
+            <a href="${channel.stream.channel.url}" title="${channel.stream.channel.status!==null?channel.stream.channel.status :channel.stream.channel.display_name}"> ${channel.stream.channel.status!==null?channel.stream.channel.status :channel.stream.channel.display_name}</a>
+            <span class="state" title="${channel.online?"on":"off"}line">${channel.online?"&#10004;":"&times;"}</span>
+           </div>
+           <div class="cardContent">
+           <img src="${channel.stream.channel.logo}" title="${channel.stream.channel.display_name}"  alt="${channel.stream.channel.display_name}" />
+           <span><a href="${channel.stream.channel.url}" title="${channel.stream.channel.display_name}" >${channel.stream.channel.display_name}</a>
+           ${channel.stream.channel.game!==null? `playing <a href="https://www.twitch.tv/directory/game/${encodeURIComponent(channel.stream.channel.game)}" title="${channel.stream.channel.game}">${channel.stream.channel.game}</a>`:``}</span>
+           
+           </div>
+        
+        </div>`;
+
+
+
+    }
+    UI.main.innerHTML = result;
+    }
+    );
+}
+function filterSelect(){
+    
+     UI.main.className = UI.select.value;
+}
+
+
+window.onload = function() {
+ updateStreams();
+ UI.select.addEventListener("change",filterSelect,{ passive: true });
+}
+</script>
+
+      <script>
+        "use strict"
+    if ('serviceWorker' in navigator) {
+ 
+        navigator.serviceWorker.register('service-worker.js')
+          .then(function(reg){
+            console.log("Yes, it did.");
+          }).catch(function(err) {
+            console.log("No it didn't. This happened: ", err)
+          });
+      }
+    </script>
+
+
+
+
+</body>
+
+</html>
